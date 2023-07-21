@@ -2,6 +2,7 @@
 import { useState } from "react";
 
 export default function Home() {
+  const [apiKey, setApiKey] = useState("")
   const [theInput, setTheInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState([
@@ -12,6 +13,15 @@ export default function Home() {
   ]);
 
   const callGetResponse = async () => {
+    if (!apiKey) {
+      alert('Please enter your OpenAI API key')
+      return false;
+    }
+    if (!theInput) {
+      alert("Message can't be empty")
+      return false;
+    }
+
     setIsLoading(true);
     let temp = messages;
     temp.push({ role: "user", content: theInput });
@@ -25,7 +35,7 @@ export default function Home() {
         "Content-Type": "application/json",
       },
 
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ messages, apiKey }),
     });
 
     const data = await response.json();
@@ -34,7 +44,6 @@ export default function Home() {
 
     setMessages((prevMessages) => [...prevMessages, output]);
     setIsLoading(false);
-
   };
 
   const Submit = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -45,10 +54,15 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between px-24 py-5">
+    <main className="flex min-h-screen flex-col items-center justify-start px-24 py-5">
       <h1 className="text-5xl font-sans">ChatterBot</h1>
-
-      <div className="flex  h-[35rem] w-[40rem] flex-col items-center bg-gray-600 rounded-xl">
+      <div className="flex w-[40rem] flex-col items-center my-2">
+        <input className="w-[85%] h-10 px-3 py-2 resize-none overflow-y-auto text-black bg-gray-300 rounded outline-none"
+          value={apiKey}
+          placeholder="OpenAI API Key"
+          onChange={(event) => setApiKey(event.target.value)} />
+      </div>
+      {apiKey ? <div className="flex  h-[35rem] w-[40rem] flex-col items-center bg-gray-600 rounded-xl">
         <div className=" h-full flex flex-col gap-2 overflow-y-auto py-8 px-3 w-full">
           {messages.map((e) => {
             return (
@@ -82,9 +96,8 @@ export default function Home() {
             send
           </button>
         </div>
-      </div>
-
-      <div></div>
+      </div> : ""
+      }
     </main>
   );
 }
